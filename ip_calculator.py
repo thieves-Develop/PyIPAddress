@@ -15,6 +15,14 @@ def cidr_to_netmask(cidr):
         return f"{(mask >> 24) & 255}.{(mask >> 16) & 255}.{(mask >> 8) & 255}.{mask & 255}"
     except ValueError:
         raise ValueError("無效的 CIDR")
+    
+def netmask_to_wildcard(netmask):
+    """將網絡掩碼轉換為配符掩碼"""
+    try:
+        wildcard_mask = [255 - int(octet) for octet in netmask.split('.')]
+        return '.'.join(map(str, wildcard_mask))
+    except ValueError:
+        raise ValueError("無效的網絡掩碼")
 
 def calculate_ip_info(input_value):
     """根據用戶的輸入（IP + 掩碼），計算網段相關信息"""
@@ -34,12 +42,20 @@ def calculate_ip_info(input_value):
     usable_ips = total_ips - 2 if total_ips > 2 else 0
     first_usable_ip = network[1] if usable_ips > 0 else 'N/A'
     last_usable_ip = network[-2] if usable_ips > 0 else 'N/A'
+    
+    # 計算子網掩碼和配符掩碼
+    netmask = network.netmask
+    wildcard_mask = netmask_to_wildcard(str(netmask))
+
+
 
     result = (f"網段: {network_address}\n"
               f"廣播地址: {broadcast_address}\n"
               f"總 IP 數: {total_ips}\n"
               f"可用 IP 數: {usable_ips}\n"
               f"第一個可用 IP: {first_usable_ip}\n"
-              f"最後一個可用 IP: {last_usable_ip}")
+              f"最後一個可用 IP: {last_usable_ip}\n"
+              f"配符掩碼: {wildcard_mask}"
+              )
     return result
 
